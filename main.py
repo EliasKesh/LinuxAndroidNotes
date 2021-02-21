@@ -13,6 +13,8 @@
 #
 #---------------------------------------------------------------------#
 import sys; 
+import os 
+
 # sys.stdout.encoding = None
 from kivy.app import App
 from kivy.uix.button import Button
@@ -30,71 +32,67 @@ from kivy.uix.popup import Popup
 import logging
 from kivy.logger import Logger
 import datetime
+import array as arr
 
+Loop = 0
 
 class YourApp(App):
-    def build(self):
-        
-        # root_folder = self.user_data_dir
-        # cache_folder = os.path.join(root_folder, 'cache')
 
-        Logger.critical("DEADBEEF = {}")
+    def build(self):
+        Loop=0
+
+        CurCount = arr.array('I', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
+        LabelArr = [0 for x in range(20)]
+
+        Logger.critical("DEADBEEF10 = {}")
         Logger.debug (" ***  DEADBEEF *** ")
-        root_widget = BoxLayout(orientation='vertical')
 
         if platform == 'android':
-            Logger.debug ("android")
+            from android.storage import primary_external_storage_path
+            Logger.critical ("android")
             # Get path to SD card Android
             theFtSize='18sp'
-            FileLocation="AndMyInfoFile.txt"
+            
+            AndPath=primary_external_storage_path()
+            Logger.critical (AndPath)
+#            FileLocation = os.path.join(AndPath, "/AndMyInfoFile.txt")
+            FileLocation = AndPath + "/Elias/AndMyInfoFile.txt"
+            Logger.critical (FileLocation)
 
         if platform == 'linux':
-            Logger.debug ("linux")
+            Logger.critical ("linux")
             FileLocation="/home/Logs/MyInfoFile.txt"
             theFtSize='24sp'
 
         MyFile= open(FileLocation,"a+")
         now = datetime.datetime.now()
-        MyFile.write ("Current date and time : ")
-        MyFile.write (now.strftime("%Y-%m-%d %H:%M:%S"))
+        MyFile.write (now.strftime("%Y-%m-%d, "))
+        MyFile.write (now.strftime("%H:%M:%S, "))
+        MyFile.write ("App Start")
         MyFile.write ("\n\r")
+        root_widget = BoxLayout(orientation='vertical')
 
-#        ButtonInfo = namedtuple('Name', 'Color')
+        button_grid = GridLayout(cols=4, 
+            col_default_width=100)
 
-        Drinks=[1.0,0.1,0.5,1]
-        Food=[0.8,0.1,0.6,1]
-        Medicine=[0.4,0.9,0.6,1]
-        Watch=[0.5,0.5,0.5,1]
-        ButtonInfo = [
-                    ('Soda', Drinks),
-                    ('Stream', Drinks),
-                    ('Coffee', Drinks),
-                    ('Sunflower', Food),
-                    ('Chips', Food),
-                    ('VG', Medicine),
-                    ('NicGum', Medicine),
-                    ('Probi', Medicine),
-                    ('Hydrox', Medicine),
-                    ('BM-H', Watch),
-                    ('BM-M', Watch),
-                    ('BM-S', Watch),
-                    ('WorkO', Watch),
-                    ('14', [0.0,0.0,0.0,1]),
-                    ('15', [0.0,0.0,0.0,1]),
-                    ('16', [0.0,0.0,0.0,1]),
-                    ('17', [0.0,0.0,0.0,1]),
-                    ('18', [0.0,0.0,0.0,1]),
-                    ('19', [0.0,0.0,0.0,1]),
-                    ('20', [0.0,0.0,0.0,1])
-                ] 
-
-        button_grid = GridLayout(cols=2, size_hint_y=2)
-
+        Loop = 0
         for theButton in ButtonInfo:
-            print(theButton[0])
-            button_grid.add_widget(Button(text=theButton[0],
+            print(theButton[0], Loop)
+            LabelArr[Loop] = Label(text=str(CurCount[0]), 
+                font_size=theFtSize,
+                size_hint_x=None,
+                width=90)
+            button_grid.add_widget(
+                LabelArr[Loop])
+            ButtonText=theButton[0]
+            button_grid.add_widget(Button(text=ButtonText,
                 background_color=theButton[1],
-                font_size=theFtSize))
+                font_size=theFtSize,
+                min_state_time=1,
+                size_hint_x=None,
+                width=275))
+            Loop += 1
+
 
         def on_checkbox_active(checkbox, value):
             if value:
@@ -102,22 +100,28 @@ class YourApp(App):
             else:
                 print('The checkbox', checkbox, 'is inactive')
 
-#        checkbox = CheckBox()
-#        checkbox.bind(active=on_checkbox_active)
-
+        def IncrementValue(ButtonText):
+            global Loop
+            Loop = 0
+            for theButton in ButtonInfo:
+                if ( theButton[0] == ButtonText ):
+                    CurCount[Loop] = CurCount[Loop] + 1
+                    LabelArr[Loop].text=str(CurCount[Loop])
+                Loop += 1
 
         def print_button_text(instance):
-            print("Logger.debug", instance.text)
+            print("Button Pressed", instance)
+            print("Logger.debug", instance)
             now = datetime.datetime.now()
-            MyFile.write (now.strftime("%Y-%m-%d %H:%M:%S, "))
+            MyFile.write (now.strftime("%Y-%m-%d, "))
+            MyFile.write (now.strftime("%H:%M:%S, "))
             MyFile.write (instance.text)
             MyFile.write ("\n\r")
             MyFile.flush()
+            IncrementValue(instance.text)
 
-        for button in button_grid.children[1:]:  # note use of the
-                                              # `children` property
+        for button in button_grid.children[1:]:
             button.bind(on_press=print_button_text)
- #           print ("button")
 
         def print_slider_value(instance, value):
             print("Logger.debug", value)
@@ -130,5 +134,35 @@ class YourApp(App):
 
         return root_widget
 
+
+
+Drinks=[1.0,0.2,0.2,1]
+Food=[0.8,0.1,0.6,1]
+Medicine=[0.4,0.9,0.6,1]
+Watch=[0.5,0.5,0.5,1]
+Blank=[0.0,0.0,0.0,1]
+ButtonInfo = [
+            ('Soda', Drinks, 0),
+            ('Stream', Drinks, 1),
+            ('Coffee', Drinks, 2),
+            ('Protein', Drinks, 3),
+            ('Sunflower', Food, 0),
+            ('Chips', Food, 0),
+            ('VG', Medicine, 0),
+            ('NicGum', Medicine, 0),
+            ('Probi', Medicine, 0),
+            ('Hydrox', Medicine, 0),
+            ('BM-H', Watch, 0),
+            ('BM-M', Watch, 0),
+            ('BM-S', Watch, 0),
+            ('WorkO', Watch, 0),
+            ('15', Blank, 0),
+            ('16', Blank, 0),
+            ('17', Blank, 0),
+            ('18', Blank, 0),
+            ('19', Blank, 0),
+            ('20', Blank, 0)
+        ] 
+# CurCount = array(20, dtype=int)
 
 YourApp().run()
