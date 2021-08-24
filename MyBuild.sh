@@ -8,4 +8,4 @@ adb shell rm /storage/emulated/0/AndMyInfoFile.txt
 
 adb pull /storage/emulated/0/kivy/EliasList/AndMyInfoFile.txt /home/Logs/
 
-adb pull /storage/emulated/0/AndMyInfoFile.txt /home/Logs/
+adb pull /storage/emulated/0/kivy/EliasList/AndMyInfoFile.txt /home/Logs/
